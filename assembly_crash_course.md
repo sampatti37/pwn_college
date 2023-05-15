@@ -201,3 +201,65 @@ p.interactive()
 
 ## Level 10
 
+In this level, we are starting to work with memory address and dereferencing them. The write up for this level expalins how we can use and manipulate memory and what is stored in memory using the ```[]``` syntax. We are then asked to store the value at address ```0x404000``` into ```rax``` and then add ```0x1337``` to the value at address ```0x404000``` and store it at the same address.
+
+We can modify our script to do the following:
+
+```Python3
+from pwn import *
+
+p = process(['/challenge/./run'])
+
+code = asm('''
+    mov rax, [0x404000];
+    mov rdi, [0x404000];
+    add rdi, 0x1337;
+    mov [0x404000], rdi;
+    ''', arch = 'amd64',os = 'linux')
+
+p.send(code)
+p.interactive()
+```
+
+## Level 11
+
+Now we are moving values from memory in different data sizes ranging from bytes to quad words. We can do this by moving the values from memory into different size registers like this:
+
+```Python3
+from pwn import *
+
+p = process(['/challenge/./run'])
+
+code = asm('''
+    mov al, [0x404000];
+    mov bx, [0x404000];
+    mov ecx, [0x404000];
+    mov rdx, [0x404000];
+    ''', arch = 'amd64',os = 'linux')
+
+p.send(code)
+p.interactive()
+```
+
+## Level 12
+
+Now we are assigning values to memory addresses that are stored in registers. We get the hint in the write up to store the constant values in other registers rather than trying to assign large values to memory in one step. Using that hint, we can do the following:
+
+```Python3
+from pwn import *
+
+p = process(['/challenge/./run'])
+
+code = asm('''
+    mov rdx, 0xdeadbeef00001337;
+    mov rbx, 0xc0ffee0000;
+    mov [rdi], rdx;
+    mov [rsi], rbx;
+    int3;
+    ''', arch = 'amd64',os = 'linux')
+
+p.send(code)
+p.interactive()
+```
+
+## Level 13

@@ -259,7 +259,87 @@ code = asm('''
     ''', arch = 'amd64',os = 'linux')
 
 p.send(code)
+p.interactive()from pwn import *
+
+p = process(['/challenge/./run'])
+
+code = asm('''
+    mov rax, [rdi];
+    mov rdx, [rdi+8];
+    int3
+    add rdx, rax;
+    mov [rsi], rdx;
+    ''', arch = 'amd64',os = 'linux')
+
+p.send(code)
 p.interactive()
 ```
 
-## Level 13
+## Level 14
+
+This level begins to explain the concept of the stack and asks us to change the top value of the stack that is located a given memory address. We can do this by scripting:
+
+```Python3
+from pwn import *
+
+p = process(['/challenge/./run'])
+
+code = asm('''
+    mov rax, [0x7fffff1ffff8];
+    sub rax, rdi;
+    mov [0x7fffff1ffff8], rax;
+    ''', arch = 'amd64',os = 'linux')
+
+p.send(code)
+p.interactive()
+```
+
+## Level 15
+
+In this level, we are tasked with swapping two values in registers using only the push and pop instruction. This can be done like this:
+
+```Python3
+from pwn import *
+
+p = process(['/challenge/./run'])
+
+code = asm('''
+    push rdi;
+    push rsi;
+    pop rdi;
+    pop rsi;
+    int3;
+    ''', arch = 'amd64',os = 'linux')
+
+p.send(code)
+p.interactive()
+```
+
+## Level 16
+
+In this level, we need to read 4 values from the stack and then compute the average of them. To do this we need to use offsets to read the values from those addresses into registers.
+
+Then we need to add all those registers together (I stored that value in ```rdi```). Lastly, we need to divide by 4 and ```push``` that value onto the stack. 
+
+To divide by 4, we can simply just shift right by 2 on ```rdi``` rather than using the ```div``` instruction. Then we can do ```push rdi;``` to push it to the stack:
+
+```Python3
+from pwn import *
+
+p = process(['/challenge/./run'])
+
+code = asm('''
+    add rdi, [rsp];
+    add rdi, [rsp+8];
+    add rdi, [rsp+16];
+    add rdi, [rsp+24];
+    shr rdi,2;
+    push rdi;
+    ''', arch = 'amd64',os = 'linux')
+
+p.send(code)
+p.interactive()
+```
+
+## Level 17
+

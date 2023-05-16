@@ -343,3 +343,96 @@ p.interactive()
 
 ## Level 17
 
+We are now learing about control flow using jumps in this level. We need to make a relative jump that skips 0x51 (81) bytes and then pop a value off the stack and jump to an absolute address.
+
+We can do this with the following script:
+
+```Python3
+from pwn import *
+
+p = process(['/challenge/./run'])
+
+code = asm('''
+            jmp HERE;
+            .rept 0x51
+                nop;
+            .endr
+    HERE:
+            pop rdi;
+            mov rax, 0x403000;
+            jmp rax;
+    ''', arch = 'amd64',os = 'linux')
+
+p.send(code)
+p.interactive()
+```
+
+## Level 18
+
+In this level, we are introduced to conditionals and conditional jumps. We are asked to implement a simple if, else if, else structure using ```cmp``` and ```jmp``` statements. This can be done with the following:
+
+```Python3
+from pwn import *
+
+p = process(['/challenge/./run'])
+
+code = asm('''
+    mov eax, [rdi];
+    mov ebx, [rdi+4];
+    mov ecx, [rdi+8];
+    mov edx, [rdi+12];
+    cmp eax, 0x7f454c46;
+    je first;
+    cmp eax, 0x00005A4D;
+    je second;
+    mov eax, ebx;
+    imul eax, ecx;
+    imul eax, edx;
+    jmp done;
+    first:
+        mov eax, 0;
+        add eax, ebx;
+        add eax, ecx;
+        add eax, edx; 
+        jmp done;
+    second:
+        mov eax, ebx;
+        sub eax, ecx;
+        sub eax, edx;
+        jmp done;
+    done:
+    ''', arch = 'amd64',os = 'linux')
+
+p.send(code)
+p.interactive()
+```
+
+## Level 19
+
+In this level, we are introduced to jump tables and are given one to use for a switch statement. We can write our script like this:
+
+```Python3
+from pwn import *
+
+p = process(['/challenge/./run'])
+
+code = asm('''
+    cmp rdi, 0x3;
+    jg greater;
+    mov rax, rdi;
+    imul rax, 0x8;
+    add rax, rsi;
+    jmp [rax];
+    greater:
+        mov rax, 0x4;
+        imul rax, 0x8;
+        add rax, rsi;
+        jmp [rax];
+    ''', arch = 'amd64',os = 'linux')
+
+p.send(code)
+p.interactive()
+```
+
+## Level 20
+

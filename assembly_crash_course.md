@@ -436,3 +436,60 @@ p.interactive()
 
 ## Level 20
 
+In this level, we are asked to implement a for loop to compute the average of n values. We can do this:
+
+```Python3
+from pwn import *
+
+p = process(['/challenge/./run'])
+
+code = asm('''
+    mov rax, 0;
+    mov r12, rsi;
+    loop:
+        cmp rsi, 0;
+        je done;
+        mov rbx, [rdi];
+        add rax, rbx;
+        add rdi, 8;
+        dec rsi;
+        jmp loop;
+    done:
+        div r12;
+    ''', arch = 'amd64',os = 'linux')
+
+p.send(code)
+p.interactive()
+```
+
+## Level 21
+
+In this level, we are asked to implement a while loop. In assembly, this looks very similar to a for loop. We can write it like this:
+
+```Python3
+from pwn import *
+
+p = process(['/challenge/./run'])
+
+code = asm('''
+    mov rax, 0;
+    cmp rdi, 0;
+    je zero;
+    loop:
+        mov rdx, [rdi];
+        cmp rdx, 0;
+        je done;
+        inc rax;
+        inc rdi;
+        jmp loop;
+    zero:
+        mov rax, 0;
+    done:
+    ''', arch = 'amd64',os = 'linux')
+
+p.send(code)
+p.interactive()
+```
+
+## Level 22
+

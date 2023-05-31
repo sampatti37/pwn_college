@@ -493,3 +493,50 @@ p.interactive()
 
 ## Level 22
 
+For this level, we are asked to implement some logic given to us. In this logic is a while loop exactly like we had in the last level so we can reuse a lot of that code.
+
+We only have to edit the code that is being done inside the loop to look like this:
+
+```Python3
+from pwn import *
+
+p = process(['/challenge/./run'])
+
+code = asm('''
+    mov rax, 0;
+    cmp rdi, 0;
+    je done;
+    loop:
+        mov rbx, 0;
+        mov bl, [rdi]
+        cmp bl, 0;
+        je done;
+
+        cmp bl, 90;
+        jg greater;
+
+        push rdi;
+        push rax;
+        mov rdi, 0;
+        mov dil, bl;
+        mov r10, 0x403000;
+        call r10;
+        mov bl, al;
+        pop rax;
+        pop rdi;
+        mov [rdi], bl;
+        add rax, 1;
+
+    greater:
+        add rdi, 1;
+        jmp loop;
+    done:
+        ret;
+    ''', arch = 'amd64',os = 'linux')
+
+p.send(code)
+p.interactive()
+```
+
+## Level 23
+

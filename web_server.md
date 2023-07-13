@@ -127,3 +127,124 @@ sockaddr:
 ```
 
 ## Level 5
+
+In this level, we need to implement the accept syscall. We can do so like this
+
+``` Assembly
+.intel_syntax noprefix
+.globl _start
+
+.section .text
+
+_start:
+    mov rdi, 2
+    mov rsi, 1
+    mov rdx, 0
+    mov rax, 41     # SYS_socket
+    syscall
+
+    mov rdi, 3
+    lea rsi, [rip+sockaddr]
+    mov rdx, 16
+    mov rax, 49  # sys_bind
+    syscall
+
+    mov rdi, 3
+    mov rsi, 0
+    mov rax, 50  #sys_listen
+    syscall
+
+    mov rax, 43
+    mov rdi, 3
+    mov rsi, 0
+    mov rdx, 0
+    syscall #sys_accept
+
+    mov rdi, 0
+    mov rax, 60  # sys_exit
+    syscall
+
+.section .data
+sockaddr:
+    .2byte 2
+    .2byte 0x5000  # sockaddr_in struct used in sys_bind
+    .4byte 0
+    .8byte 0
+
+sockaddr2:
+    .2byte 2
+    .2byte 0x5000
+    .4byte 0
+    .8byte 0
+```
+
+## Level 6
+
+In this level, we need to respond to an http request. To do this, we need to accept the connection (last level), read in the request (sys_read), write the response (sys_write), and then close the file (sys_close). 
+
+We also need to have the response string in the code as well which can be added under the data section using the ```.string``` syntax. 
+
+``` Assembly
+.intel_syntax noprefix
+.globl _start
+
+.section .text
+
+_start:
+    mov rdi, 2
+    mov rsi, 1
+    mov rdx, 0
+    mov rax, 41     # SYS_socket
+    syscall
+
+    mov rdi, 3
+    lea rsi, [rip+sockaddr]
+    mov rdx, 16
+    mov rax, 49  # sys_bind
+    syscall
+
+    mov rdi, 3
+    mov rsi, 0
+    mov rax, 50  #sys_listen
+    syscall
+
+    mov rax, 43
+    mov rdi, 3
+    mov rsi, 0
+    mov rdx, 0
+    syscall #sys_accept
+
+    sub rsp, 1024
+    mov rax, 0
+    mov rdi, 4
+    mov rsi, rsp
+    mov rdx, 140
+    syscall #sys_read
+
+    mov rax, 1
+    mov rdi, 4
+    lea rsi, [rip+header]
+    mov rdx, 19
+    syscall #sys_write
+
+    mov rax, 3
+    mov rdi, 4
+    syscall #sys_close
+
+    mov rdi, 0
+    mov rax, 60  # sys_exit
+    syscall
+
+.section .data
+sockaddr:
+    .2byte 2
+    .2byte 0x5000  # sockaddr_in struct used in sys_bind
+    .4byte 0
+    .8byte 0
+
+header:
+    .string "HTTP/1.0 200 OK\r\n\r\n"
+```
+
+## Level 7
+
